@@ -1,0 +1,35 @@
+generator client {
+  provider        = "prisma-kysely"
+  output          = "../lib"
+  previewFeatures = ["postgresqlExtensions"]
+  fileName        = "types.ts"
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("POSTGRES_URL")
+  directUrl  = env("POSTGRES_URL_NON_POOLING")
+  extensions = [pgcrypto]
+}
+
+model User {
+  id        String   @id @default(dbgenerated("ksuid_pgcrypto_micros()")) @db.Char(27)
+  username  String   @unique
+  createdAt DateTime @default(dbgenerated("now()")) @db.Timestamptz(3)
+}
+
+model Challenge {
+  id        String   @id @default(dbgenerated("ksuid_pgcrypto_micros()")) @db.Char(27)
+  userId    String   @unique @db.Char(27)
+  content   String
+  createdAt DateTime @default(dbgenerated("now()")) @db.Timestamptz(3)
+}
+
+model Authenticator {
+  id           String  @id @default(dbgenerated("ksuid_pgcrypto_micros()")) @db.Char(27)
+  credentialId String  @unique
+  userId       String  @db.Char(27)
+  publicKey    Bytes
+  counter      BigInt
+  transports   String?
+}
