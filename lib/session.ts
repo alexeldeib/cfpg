@@ -1,4 +1,4 @@
-import { IronSessionOptions, getIronSession, IronSessionData } from 'iron-session'
+import { IronSessionOptions, getIronSession, getServerActionIronSession } from 'iron-session'
 
 import { cookies } from 'next/headers';
 
@@ -7,17 +7,17 @@ const sessionOptions: IronSessionOptions = {
   cookieName: "cfpg",
   // secure: true should be used in production (HTTPS) but can't be used in development (HTTP)
   cookieOptions: {
-    secure: process.env.NODE_ENV === "production",
+    secure: false,
+    httpOnly: false,
   },
 };
 
 // This is where we specify the typings of req.session.*
-declare module 'iron-session' {
-  interface IronSessionData {
-    username?: string
-    userId?: string
-    challenge?: string
-  }
+interface IronSessionData {
+  username?: string
+  userId?: string
+  challenge?: string
+  sessionID?: string
 }
 
 async function getSession(req: Request, res: Response) {
@@ -25,6 +25,12 @@ async function getSession(req: Request, res: Response) {
   return session
 }
 
+const getServerActionSession = async () => {
+  const session = getServerActionIronSession<IronSessionData>(sessionOptions, cookies())
+  return session
+}
+
 export {
   getSession,
+  getServerActionSession,
 }
